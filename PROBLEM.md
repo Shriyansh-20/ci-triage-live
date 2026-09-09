@@ -20,23 +20,31 @@ After reading logs and understanding the failure, the engineer can:
 
 ## The Prediction
 
-The system estimates **probability for each root cause** (flaky, genuine, infra), rather than making the decision itself.
+The system emits **one of four outputs**: flaky, genuine, infrastructure, or **abstain**.
+
+**Why four, not three:**
+- Abstain is the safety valve: when confidence is too low across all three causes, the system defers to engineer judgment (cost 700) rather than risk guessing wrong on "genuine" (cost 5000)
 
 **Why this is not the same as the decision:**
-- The engineer uses these probabilities + their judgment to decide action
-- A 70% flaky estimate might still mean "rerun once, then escalate"
-- The engineer owns the call; the system provides evidence
+- The engineer uses the system output + their judgment to decide action
+- Engineer controls the release decision; system provides triage
+- The engineer owns the call; the system provides evidence (or abstains)
 
-## The Cost
+## The Cost Matrix
 
-| Error Type | Cost | Why |
-|-----------|------|-----|
-| Predict genuine, actually flaky | 600 | Time waste, unnecessary escalation |
-| Predict genuine, actually infra | 400 | Time waste, rerun yields same result |
-| Predict flaky, actually genuine | **5000** | Broken code ships to production release |
-| Predict infra, actually genuine | 400 | Time waste, rerun yields same result |
-| Predict infra, actually flaky | 400 | Uncertain output, wastes time |
-| Escalate to human | 500 | Always a cost (time, attention) |
-| Correct prediction | 0 | System worked as intended |
+| True Cause | System Output | Cost | Reason |
+|-----------|---------------|------|--------|
+| Flaky | Flaky | 0 | Correct |
+| Genuine | Genuine | 0 | Correct |
+| Infrastructure | Infrastructure | 0 | Correct |
+| — | Abstain | 700 | Engineer manual logs investigation |
+| Flaky | Genuine | 600 | Time waste, unnecessary escalation |
+| Flaky | Infrastructure | 400 | Time waste, wrong investigation |
+| Genuine | Flaky | **5000** | Broken code ships to production |
+| Genuine | Infrastructure | 400 | Time waste, wrong investigation |
+| Infrastructure | Flaky | 400 | Time waste, test rerun yields same result |
+| Infrastructure | Genuine | 600 | Time waste, escalate engineer |
 
-**The dominant risk:** Calling it flaky when it's really a bug costs 5000. Shipping broken code is unacceptable.
+**The dominant risk:** Predicting flaky when actually genuine costs 5000. Shipping broken code is unacceptable.
+
+**Key property:** Asymmetric cost. The system minimizes expected cost, not accuracy. Accuracy would treat all errors equally, which is false here.
