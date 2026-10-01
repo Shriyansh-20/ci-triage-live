@@ -1,0 +1,21 @@
+{
+  "data_source": "FlakeFlagger (Zenodo 4450723, CC-BY-4.0)",
+  "status": "placeholder",
+  "note": "EDA will be populated when FlakeFlagger data is downloaded and loaded via ci_triage/data.py",
+  "schema": {
+    "n_rows": "Number of test runs",
+    "n_columns": "Total number of columns after join",
+    "n_projects": "Unique projects in dataset",
+    "n_tests": "Unique tests in dataset",
+    "positive_rate": "Fraction of runs with outcome=flaky",
+    "label_distribution": "Count of each outcome label"
+  },
+  "columns_removed_by_leak_guard": [
+    "flakiness_score",
+    "failure_rate",
+    "pass_rate",
+    "standard_deviation_of_pass_rate",
+    "coefficient_of_variance",
+    "times_flipped"
+  ]
+}
